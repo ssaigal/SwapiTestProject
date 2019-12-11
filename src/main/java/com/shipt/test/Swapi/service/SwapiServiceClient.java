@@ -35,24 +35,12 @@ public class SwapiServiceClient {
 
         for(int i=0; i< apiResponse.size();i++){
             sb.append("People Name: "+apiResponse.get(i).getName()+"\n");
-            Call<Planet> pcallSync = service.getPlanets(apiResponse.get(i).getHomeworld());
-            try {
-                Response<Planet> pResponse = pcallSync.execute();
-                sb.append("Planet Name: "+pResponse.body().getName()+"\n");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
 
-            for (String ship : apiResponse.get(i).getStarships()) {
-                Call<StarShip> scallSync = service.getStarShips(ship);
-                try {
-                    Response<StarShip> sResponse = scallSync.execute();
-                    sb.append("Starship Name: "+sResponse.body().getName()+"\n");
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            String planetName= getPlanetName(apiResponse.get(i).getHomeworld());
+            sb.append(planetName);
 
-            }
+            String shipNames = getStarShipNames(apiResponse.get(i).getStarships(), i);
+            sb.append(shipNames);
 
             sb.append("-----------------------------------------------------------------------------"+"\n\n");
 
@@ -63,6 +51,34 @@ public class SwapiServiceClient {
                     ? response.errorBody().string() : "Unknown error");
         }
 
+        return sb.toString();
+    }
+
+    private String getPlanetName(String planetUrl) {
+        Call<Planet> pcallSync = service.getPlanets(planetUrl);
+        String planet="";
+        try {
+            Response<Planet> pResponse = pcallSync.execute();
+            planet = "Planet Name: "+pResponse.body().getName()+"\n";
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return planet;
+    }
+
+    private String getStarShipNames(String[] starShips, int i) {
+        StringBuilder sb = new StringBuilder();
+        int k=1;
+        for (String ship : starShips) {
+            Call<StarShip> scallSync = service.getStarShips(ship);
+            try {
+                Response<StarShip> sResponse = scallSync.execute();
+                sb.append("Starship "+k+": "+sResponse.body().getName()+"\n");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            k++;
+        }
         return sb.toString();
     }
 
